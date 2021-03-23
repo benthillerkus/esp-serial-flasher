@@ -85,6 +85,10 @@ void get_example_binaries(target_chip_t target, example_binaries_t *bins)
 
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 esp_loader_error_t connect_to_target(uint32_t higrer_baudrate)
 {
     esp_loader_connect_args_t connect_config = ESP_LOADER_CONNECT_DEFAULT();
@@ -170,3 +174,7 @@ esp_loader_error_t flash_binary(const uint8_t *bin, size_t size, size_t address)
 
     return ESP_LOADER_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif
