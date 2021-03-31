@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 set(FLASHER_DIR ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(PORT RASPBERRY_PI)
+set(COPY_LOCATION ~/Projects/plantberrypi/src/binaries/raspberry_flasher)
 
 project(raspberry_flasher)
     
@@ -15,3 +16,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC flasher)
 
 # This example only supports one target (ESP32) and uses specific binary to be flashed.
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DSINGLE_TARGET_SUPPORT=1)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${COPY_LOCATION})
