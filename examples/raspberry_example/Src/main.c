@@ -139,7 +139,13 @@ static int upload_file(const char *boot_path, const char *part_path, const char 
     return success_status;
 }
 
+void flush(void) {
+    fflush(stderr);
+    fflush(stdout);
+}
+
 int main(int argc, char *argv[]) {
+    atexit(flush);
     bool useDefaults = true;
 
     if (argc <= 1) {
