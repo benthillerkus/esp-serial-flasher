@@ -36,27 +36,27 @@ extern "C" {
 #define PARTITION_ADDRESS   0x8000
 #define APPLICATION_ADDRESS 0x10000
 
-static void upload_file(const char *boot_path, const char *part_path, const char *app_path) {
+static int upload_file(const char *boot_path, const char *part_path, const char *app_path) {
     uint8_t *boot = NULL;
     uint8_t *part = NULL;
     uint8_t *app = NULL;
 
     FILE *boot_image = fopen(boot_path, "r");
     if (boot_image == NULL) {
-        printf("Error:Failed to open file %s\n", boot_path);
-        return;
+        fprintf(stderr, "Error:Failed to open file %s\n", boot_path);
+        return 1;
     }
 
     FILE *part_image = fopen(part_path, "r");
     if (part_image == NULL) {
-        printf("Error:Failed to open file %s\n", part_path);
-        return;
+        fprintf(stderr, "Error:Failed to open file %s\n", part_path);
+        return 1;
     }
 
     FILE *app_image = fopen(app_path, "r");
     if (app_image == NULL) {
-        printf("Error:Failed to open file %s\n", app_path);
-        return;
+        fprintf(stderr, "Error:Failed to open file %s\n", app_path);
+        return 1;
     }
 
     fseek(boot_image, 0L, SEEK_END);
@@ -74,22 +74,26 @@ static void upload_file(const char *boot_path, const char *part_path, const char
     rewind(app_image);
     printf("File %s opened. Size: %u bytes\n", app_path, app_size);
 
+    int success_status = 0;
 
     boot = (uint8_t *) malloc(boot_size);
     if (boot == NULL) {
         printf("Error: Failed allocate memory\n");
+        success_status = 1;
         goto cleanup;
     }
 
     part = (uint8_t *) malloc(part_size);
     if (part == NULL) {
         printf("Error: Failed allocate memory\n");
+        success_status = 1;
         goto cleanup;
     }
 
     app = (uint8_t *) malloc(app_size);
     if (app == NULL) {
-        printf("Error: Failed allocate memory\n");
+        fprintf(stderr, "Error: Failed allocate memory\n");
+        success_status = 1;
         goto cleanup;
     }
 
@@ -97,7 +101,8 @@ static void upload_file(const char *boot_path, const char *part_path, const char
     {
         size_t boot_bytes_read = fread(boot, 1, boot_size, boot_image);
         if (boot_bytes_read != boot_size) {
-            printf("Error occurred while reading file");
+            fprintf(stderr, "Error occurred while reading file");
+            success_status = 1;
             goto cleanup;
         }
     }
@@ -105,7 +110,8 @@ static void upload_file(const char *boot_path, const char *part_path, const char
     {
         size_t part_bytes_read = fread(part, 1, part_size, part_image);
         if (part_bytes_read != part_size) {
-            printf("Error occurred while reading file");
+            fprintf(stderr, "Error occurred while reading file");
+            success_status = 1;
             goto cleanup;
         }
     }
@@ -113,14 +119,15 @@ static void upload_file(const char *boot_path, const char *part_path, const char
     {
         size_t app_bytes_read = fread(app, 1, app_size, app_image);
         if (app_bytes_read != app_size) {
-            printf("Error occurred while reading file");
+            fprintf(stderr, "Error occurred while reading file");
+            success_status = 1;
             goto cleanup;
         }
     }
 
-    flash_binary(boot, boot_size, BOOTLOADER_ADDRESS);
-    flash_binary(part, part_size, PARTITION_ADDRESS);
-    flash_binary(app, app_size, APPLICATION_ADDRESS);
+    if (flash_binary(boot, boot_size, BOOTLOADER_ADDRESS) != ESP_LOADER_SUCCESS) return 1;
+    if (flash_binary(part, part_size, PARTITION_ADDRESS) != ESP_LOADER_SUCCESS) return 1;
+    if (flash_binary(app, app_size, APPLICATION_ADDRESS) != ESP_LOADER_SUCCESS) return 1;
 
     cleanup:
     fclose(boot_image);
@@ -129,6 +136,7 @@ static void upload_file(const char *boot_path, const char *part_path, const char
     free(part);
     fclose(app_image);
     free(app);
+    return success_status;
 }
 
 int main(int argc, char *argv[]) {
@@ -141,7 +149,7 @@ int main(int argc, char *argv[]) {
         printf("App: %s\n\n", BINARY_PATH_APP);
         useDefaults = false;
     } else if (argc < 4) {
-        printf("Not enough arguments supplied!\n");
+        fprintf(stderr, "Not enough arguments supplied!\n");
         return 1;
     } else if (argc == 4) {
         printf("Using the following files:\n");
@@ -149,7 +157,7 @@ int main(int argc, char *argv[]) {
         printf("Part: %s\n", argv[2]);
         printf("App: %s\n\n", argv[3]);
     } else {
-        printf("Too mangy arguments supplied!\n");
+        fprintf(stderr, "Too many arguments supplied!\n");
         return 1;
     }
 
@@ -160,16 +168,16 @@ int main(int argc, char *argv[]) {
             .gpio0_trigger_pin = TARGET_IO0_Pin,
     };
 
-    loader_port_raspberry_init(&config);
+    if (loader_port_raspberry_init(&config) != ESP_LOADER_SUCCESS) return 1;
 
-    if (connect_to_target(HIGHER_BAUD_RATE) == ESP_LOADER_SUCCESS) {
-        upload_file(
-                useDefaults ? argv[1] : BINARY_PATH_BOOT,
-                useDefaults ? argv[2] : BINARY_PATH_PART,
-                useDefaults ? argv[3] : BINARY_PATH_APP);
-    }
+    if (connect_to_target(HIGHER_BAUD_RATE) != ESP_LOADER_SUCCESS) return 1;
 
-    loader_port_reset_target();
+    return upload_file(
+            useDefaults ? argv[1] : BINARY_PATH_BOOT,
+            useDefaults ? argv[2] : BINARY_PATH_PART,
+            useDefaults ? argv[3] : BINARY_PATH_APP);
+
+    // loader_port_reset_target(); // The ESP32-Cam is to be resetted by button press
 }
 
 #ifdef __cplusplus

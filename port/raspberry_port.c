@@ -215,12 +215,12 @@ esp_loader_error_t loader_port_raspberry_init(const loader_raspberry_config_t *c
 
     serial = serialOpen(config->device, config->baudrate);
     if (serial < 0) {
-        printf("Serial port could not be opened!\n");
+        fprintf(stderr, "Serial port could not be opened!\n");
         return ESP_LOADER_ERROR_FAIL;
     }
 
     if (gpioInitialise() < 0) {
-        printf("pigpio initialisation failed\n");
+        fprintf(stderr, "pigpio initialisation failed\n");
         return ESP_LOADER_ERROR_FAIL;
     }
 

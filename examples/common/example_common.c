@@ -95,7 +95,7 @@ esp_loader_error_t connect_to_target(uint32_t higrer_baudrate)
 
     esp_loader_error_t err = esp_loader_connect(&connect_config);
     if (err != ESP_LOADER_SUCCESS) {
-        printf("Cannot connect to target. Error: %u\n", err);
+        fprintf(stderr, "Cannot connect to target. Error: %u\n", err);
         return err;
     }
     printf("Connected to target\n");
@@ -103,15 +103,15 @@ esp_loader_error_t connect_to_target(uint32_t higrer_baudrate)
     if (higrer_baudrate && esp_loader_get_target() != ESP8266_CHIP) {
         err = esp_loader_change_baudrate(higrer_baudrate);
         if (err == ESP_LOADER_ERROR_UNSUPPORTED_FUNC) {
-            printf("ESP8266 does not support change baudrate command.");
+            fprintf(stderr, "ESP8266 does not support change baudrate command.");
             return err;
         } else if (err != ESP_LOADER_SUCCESS) {
-            printf("Unable to change baud rate on target.");
+            fprintf(stderr, "Unable to change baud rate on target.");
             return err;
         } else {
             err = loader_port_change_baudrate(higrer_baudrate);
             if (err != ESP_LOADER_SUCCESS) {
-                printf("Unable to change baud rate.");
+                fprintf(stderr, "Unable to change baud rate.");
                 return err;
             }
             printf("Baudrate changed\n");
@@ -131,7 +131,7 @@ esp_loader_error_t flash_binary(const uint8_t *bin, size_t size, size_t address)
     printf("Erasing flash (this may take a while)...\n");
     err = esp_loader_flash_start(address, size, sizeof(payload));
     if (err != ESP_LOADER_SUCCESS) {
-        printf("Erasing flash failed with error %d.\n", err);
+        fprintf(stderr, "Erasing flash failed with error %d.\n", err);
         return err;
     }
     printf("Start programming\n");
@@ -145,7 +145,7 @@ esp_loader_error_t flash_binary(const uint8_t *bin, size_t size, size_t address)
 
         err = esp_loader_flash_write(payload, to_read);
         if (err != ESP_LOADER_SUCCESS) {
-            printf("\nPacket could not be written! Error %d.\n", err);
+            fprintf(stderr, "\nPacket could not be written! Error %d.\n", err);
             return err;
         }
 
@@ -163,10 +163,10 @@ esp_loader_error_t flash_binary(const uint8_t *bin, size_t size, size_t address)
 #if MD5_ENABLED
     err = esp_loader_flash_verify();
     if (err == ESP_LOADER_ERROR_UNSUPPORTED_FUNC) {
-        printf("ESP8266 does not support flash verify command.");
+        fprintf(stderr, "ESP8266 does not support flash verify command.");
         return err;
     } else if (err != ESP_LOADER_SUCCESS) {
-        printf("MD5 does not match. err: %d\n", err);
+        fprintf(stderr, "MD5 does not match. err: %d\n", err);
         return err;
     }
     printf("Flash verified\n");
