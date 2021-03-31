@@ -169,7 +169,7 @@ static esp_loader_error_t change_baudrate(int file_desc, int baudrate)
 
     tcsetattr (file_desc, TCSANOW, &options);
 
-    return ESP_LOADER_SUCCESS; 
+    return ESP_LOADER_SUCCESS;
 }
 
 static void set_timeout(uint32_t timeout)
@@ -219,13 +219,15 @@ esp_loader_error_t loader_port_raspberry_init(const loader_raspberry_config_t *c
         return ESP_LOADER_ERROR_FAIL;
     }
 
-    if (gpioInitialise() < 0) {
-        fprintf(stderr, "pigpio initialisation failed\n");
-        return ESP_LOADER_ERROR_FAIL;
-    }
-
-    gpioSetMode(config->reset_trigger_pin, PI_OUTPUT);
-    gpioSetMode(config->gpio0_trigger_pin, PI_OUTPUT);
+// pigpio throws errors regardless, so why bother
+//       if (gpioInitialise() < 0) {
+//        fprintf(stderr, "pigpio initialisation failed\n");
+//        return ESP_LOADER_ERROR_FAIL;
+//    }
+//
+// doesn't apply to us anyways
+//    gpioSetMode(config->reset_trigger_pin, PI_OUTPUT);
+//    gpioSetMode(config->gpio0_trigger_pin, PI_OUTPUT);
 
     return ESP_LOADER_SUCCESS;
 }

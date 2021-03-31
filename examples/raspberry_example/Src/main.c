@@ -183,7 +183,7 @@ int main(int argc, char *argv[]) {
             useDefaults ? argv[2] : BINARY_PATH_PART,
             useDefaults ? argv[3] : BINARY_PATH_APP);
 
-    // loader_port_reset_target(); // The ESP32-Cam is to be resetted by button press
+//     loader_port_reset_target(); // The ESP32-Cam is to be resetted by button press
 }
 
 #ifdef __cplusplus
