@@ -125,9 +125,18 @@ static int upload_file(const char *boot_path, const char *part_path, const char 
         }
     }
 
-    if (flash_binary(boot, boot_size, BOOTLOADER_ADDRESS) != ESP_LOADER_SUCCESS) return 1;
-    if (flash_binary(part, part_size, PARTITION_ADDRESS) != ESP_LOADER_SUCCESS) return 1;
-    if (flash_binary(app, app_size, APPLICATION_ADDRESS) != ESP_LOADER_SUCCESS) return 1;
+    if (flash_binary(boot, boot_size, BOOTLOADER_ADDRESS) != ESP_LOADER_SUCCESS) {
+        success_status = 1;
+        goto cleanup;
+    };
+    if (flash_binary(part, part_size, PARTITION_ADDRESS) != ESP_LOADER_SUCCESS) {
+        success_status = 1;
+        goto cleanup;
+    };
+    if (flash_binary(app, app_size, APPLICATION_ADDRESS) != ESP_LOADER_SUCCESS) {
+        success_status = 1;
+        goto cleanup;
+    };
 
     cleanup:
     fclose(boot_image);
