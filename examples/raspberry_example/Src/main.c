@@ -35,6 +35,8 @@ extern "C" {
 #define BOOTLOADER_ADDRESS  0x1000
 #define PARTITION_ADDRESS   0x8000
 #define APPLICATION_ADDRESS 0x10000
+#define NVS_ADDRESS 0x9000
+#define NVS_SIZE 20*1024
 
 static int upload_file(const char *boot_path, const char *part_path, const char *app_path) {
     uint8_t *boot = NULL;
@@ -137,6 +139,14 @@ static int upload_file(const char *boot_path, const char *part_path, const char 
         success_status = 1;
         goto cleanup;
     };
+
+    { // Clear NVS
+        size_t nvs_size = NVS_SIZE;
+        uint8_t *nvs = malloc(nvs_size);
+        memset(nvs, 0xFF, nvs_size);
+        if (flash_binary(nvs, nvs_size, NVS_ADDRESS) != ESP_LOADER_SUCCESS) success_status = 1;
+        free(nvs);
+    }
 
     cleanup:
     fclose(boot_image);
