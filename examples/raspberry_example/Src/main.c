@@ -127,19 +127,23 @@ static int upload_file(const char *boot_path, const char *part_path, const char 
         }
     }
 
+    printf("Flashing Bootloader:\n");
     if (flash_binary(boot, boot_size, BOOTLOADER_ADDRESS) != ESP_LOADER_SUCCESS) {
         success_status = 1;
         goto cleanup;
     };
+    printf("Flashing Partition Table:\n");
     if (flash_binary(part, part_size, PARTITION_ADDRESS) != ESP_LOADER_SUCCESS) {
         success_status = 1;
         goto cleanup;
     };
+    printf("Flashing Application:\n");
     if (flash_binary(app, app_size, APPLICATION_ADDRESS) != ESP_LOADER_SUCCESS) {
         success_status = 1;
         goto cleanup;
     };
 
+    printf("Clearing NVS:\n");
     { // Clear NVS
         size_t nvs_size = NVS_SIZE;
         uint8_t *nvs = malloc(nvs_size);
