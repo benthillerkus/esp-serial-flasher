@@ -10,14 +10,17 @@ env:
 
 jobs:
   cross:
-    name: Download cross compiler
+    name: Download Cross Compiler
     runs-on: ubuntu-latest
     steps:
       - name: Download
         run: wget -O archive https://downloads.sourceforge.net/project/raspberry-pi-cross-compilers/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%203A%2B%2C%203B%2B%2C%204/cross-gcc-10.2.0-pi_3%2B.tar.gz?ts=1618078858&r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fraspberry-pi-cross-compilers%2Ffiles%2FRaspberry%2520Pi%2520GCC%2520Cross-Compiler%2520Toolchains%2FBuster%2FGCC%252010.2.0%2FRaspberry%2520Pi%25203A%252B%252C%25203B%252B%252C%25204%2Fcross-gcc-10.2.0-pi_3%252B.tar.gz%2Fdownload%3Fuse_mirror%3Dautoselect
       
-      - name: Extract
-        run: tar --extract -f archive cross-pi-gcc-10.2.0-2/bin/
+      - name: Extract GCC
+        run: tar --extract -f archive cross-pi-gcc-10.2.0-2/bin/$GCC_NAME
+        
+      - name: Extract G++
+        run: tar --extract -f archive cross-pi-gcc-10.2.0-2/bin/$G++_NAME
       
       - uses: actions/upload-artifact@v2
         with:
