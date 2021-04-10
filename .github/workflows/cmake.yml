@@ -21,13 +21,10 @@ jobs:
       run: wget https://github.com/joan2937/pigpio/archive/master.zip && unzip master.zip && cd pigpio-master
     
     - name: Build Pigpio
-      run: make
+      run: cd pigpio-master && make
       
     - name: Install Pigpio
-      run: sudo make install
-  
-    - name: Leave directory
-      run: cd ..
+      run: cd pigpio-master && sudo make install
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
