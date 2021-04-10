@@ -11,7 +11,7 @@ env:
 jobs:
   cross:
     name: Download cross compiler
-    runs-on: ubuntu-lastest
+    runs-on: ubuntu-latest
     steps:
       - uses: wei/wget@v1
         with:
