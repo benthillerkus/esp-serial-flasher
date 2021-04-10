@@ -7,24 +7,35 @@ env:
   BUILD_TYPE: Release
 
 jobs:
+  pigpio:
+    name: Download, Build and Install Pigpio
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Repository name with owner. For example, actions/checkout
+        # Default: ${{ github.repository }}
+        repository: 'joan2937/pigpio'
+        path: pigpio-master
+    
+    - name: Build Pigpio
+      working-directory: ${{github.workspace}}/pigpio-master
+      run: make
+      
+    - name: Install Pigpio
+      working-directory: ${{github.workspace}}/pigpio-master
+      run: sudo make install
+
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
+    needs: pigpio
 
     steps:
     - uses: actions/checkout@v2
-    
-    - name: Download Pigpio
-      run: wget https://github.com/joan2937/pigpio/archive/master.zip && unzip master.zip && cd pigpio-master
-    
-    - name: Build Pigpio
-      run: cd pigpio-master && make
-      
-    - name: Install Pigpio
-      run: cd pigpio-master && sudo make install
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
@@ -46,6 +57,12 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
+      
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: raspberry_flasher
+        path: raspberry_flasher
 
     - name: Test
       working-directory: ${{github.workspace}}/build
